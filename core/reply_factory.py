@@ -1,6 +1,4 @@
-
 from .constants import BOT_WELCOME_MESSAGE, PYTHON_QUESTION_LIST
-
 
 def generate_bot_responses(message, session):
     bot_responses = []
@@ -27,26 +25,53 @@ def generate_bot_responses(message, session):
 
     return bot_responses
 
-
 def record_current_answer(answer, current_question_id, session):
     '''
     Validates and stores the answer for the current question to django session.
     '''
-    return True, ""
+    if current_question_id is None:
+        return False, "No current question id found in session."
 
+    if answer.strip() == "":
+        return False, "Please provide a valid answer."
+
+    # Storing the answer in session, assuming session is a dictionary-like object
+    session[f"answer_{current_question_id}"] = answer.strip()
+    return True, ""
 
 def get_next_question(current_question_id):
     '''
     Fetches the next question from the PYTHON_QUESTION_LIST based on the current_question_id.
     '''
+    if current_question_id is None:
+        return None, None
 
-    return "dummy question", -1
+    if current_question_id >= len(PYTHON_QUESTION_LIST):
+        return None, None  # Indicates end of questions
 
+    next_question = PYTHON_QUESTION_LIST[current_question_id]["question"]
+    next_question_id = current_question_id + 1
+
+    return next_question, next_question_id
 
 def generate_final_response(session):
     '''
     Creates a final result message including a score based on the answers
     by the user for questions in the PYTHON_QUESTION_LIST.
     '''
+    total_questions = len(PYTHON_QUESTION_LIST)
+    correct_answers = 0
 
-    return "dummy result"
+    for question_id, question_data in enumerate(PYTHON_QUESTION_LIST):
+        user_answer = session.get(f"answer_{question_id}")
+        if user_answer is not None and user_answer.lower() == question_data["answer"].lower():
+            correct_answers += 1
+
+    score = (correct_answers / total_questions) * 100
+
+    result_message = f"You have completed the quiz.\n"
+    result_message += f"Total Questions: {total_questions}\n"
+    result_message += f"Correct Answers: {correct_answers}\n"
+    result_message += f"Your Score: {score:.2f}%"
+
+    return result_message
