@@ -29,24 +29,29 @@ def generate_bot_responses(message, session):
 
 
 def record_current_answer(answer, current_question_id, session):
-    '''
-    Validates and stores the answer for the current question to django session.
-    '''
+    if current_question_id is None:
+        return False, "No question to answer."
+        
+    answers = session.get("answers", {})
+    answers[current_question_id] = answer
+    session["answers"] = answers
+    
     return True, ""
-
-
+        
 def get_next_question(current_question_id):
-    '''
-    Fetches the next question from the PYTHON_QUESTION_LIST based on the current_question_id.
-    '''
+    if current_question_id is None:
+        return PYTHON_QUESTION_LIST[0], 1
+        
+    next_question_id = current_question_id + 1
+    if next_question_id <= len(PYTHON_QUESTION_LIST):
+        return PYTHON_QUESTION_LIST[next_question_id - 1], next_question_id
 
-    return "dummy question", -1
-
-
+    return None, None
+        
 def generate_final_response(session):
-    '''
-    Creates a final result message including a score based on the answers
-    by the user for questions in the PYTHON_QUESTION_LIST.
-    '''
+    answers = session.get("answers", {})
+    score = calculate_score(answers)
+    return f"Your score is: {score}"
 
-    return "dummy result"
+def calculate_score(answers):
+    return len(answers)
