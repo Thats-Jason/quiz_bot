@@ -1,6 +1,6 @@
 
 from .constants import BOT_WELCOME_MESSAGE, PYTHON_QUESTION_LIST
-
+record_current_answer(), get_next_question(), and generate_final_response()
 
 def generate_bot_responses(message, session):
     bot_responses = []
